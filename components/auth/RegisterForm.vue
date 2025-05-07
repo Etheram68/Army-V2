@@ -2,7 +2,6 @@
 import { z } from 'zod'
 import { useForm } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
-import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { 
@@ -28,8 +27,18 @@ const router = useRouter()
 const authStore = useAuthStore()
 const { toast } = useToast()
 
-const sections = ref([])
-const groups = ref([])
+interface Section {
+  id: string
+  name: string
+}
+
+interface Group {
+  id: string
+  name: string
+}
+
+const sections = ref<Section[]>([])
+const groups = ref<Group[]>([])
 
 const formSchema = toTypedSchema(z.object({
   email: z.string().email('Email invalide'),
@@ -40,35 +49,82 @@ const formSchema = toTypedSchema(z.object({
     'CHEF_GROUPE',
     'CHEF_SECTION',
     'COMMANDANT_UNITE',
-  ]),
-  sectionId: z.string(),
-  groupId: z.string()
+  ], {
+    required_error: 'Rôle requis'
+  }),
+  sectionId: z.string({
+    required_error: 'Section requise'
+  }),
+  groupId: z.string({
+    required_error: 'Groupe requis'
+  })
 }))
 
 const form = useForm({
-  validationSchema: formSchema
+  validationSchema: formSchema,
+  initialValues: {
+    email: '',
+    password: '',
+    name: '',
+    role: 'RESERVISTE',
+    sectionId: '',
+    groupId: ''
+  }
 })
 
-onMounted(async () => {
-  sections.value = await $fetch('/api/sections')
+const { data: sectionsData, error: sectionsError } = useFetch('/api/sections')
+
+onMounted(() => {
+  if (sectionsData.value) {
+    sections.value = sectionsData.value
+  }
+  if (sectionsError.value) {
+    toast({
+      title: 'Erreur de chargement',
+      description: 'Impossible de charger les sections.',
+      variant: 'destructive'
+    })
+  }
 })
 
-const selectedSection = computed(() => {
-  return sections.value.find(section => section.id === form.values.sectionId)
+const sectionId = computed(() => form.values.sectionId)
+
+const { data: groupsData, error: groupsError } = useAsyncData<Group[]>(
+  'groups',
+  async () => {
+    if (!sectionId.value) return []
+    return await $fetch(`/api/sections/${sectionId.value}/groups`)
+  },
+  {
+    watch: [sectionId],
+    immediate: false
+  }
+)
+
+watch(groupsData, (newGroups) => {
+  if (newGroups) {
+    groups.value = newGroups
+  }
 })
 
-watch(selectedSection, async (section) => {
-  if (section) {
-    // Si une section est sélectionnée, charger les groupes
-    groups.value = await $fetch(`/api/sections/${section.id}/groups`)
-  } else {
-    // Si aucune section n'est sélectionnée, réinitialiser les groupes
+watch(groupsError, (error) => {
+  if (error) {
+    toast({
+      title: 'Erreur de chargement',
+      description: 'Impossible de charger les groupes.',
+      variant: 'destructive'
+    })
     groups.value = []
   }
 })
 
+const isSubmitting = ref(false)
+
 const onSubmit = form.handleSubmit(async (values) => {
+  console.log('[onSubmit] Form values:', values)
   try {
+    isSubmitting.value = true
+    console.log('Submitting form with values:', values)
     await authStore.register(
       values.email,
       values.password,
@@ -77,13 +133,21 @@ const onSubmit = form.handleSubmit(async (values) => {
       values.sectionId,
       values.groupId
     )
+    toast({
+      title: 'Succès',
+      description: 'Inscription réussie !',
+      variant: 'default'
+    })
     router.push('/login')
   } catch (error) {
+    console.error('Registration error:', error)
     toast({
       title: 'Erreur',
-      description: error instanceof Error ? error.message : 'Une erreur est survenue',
+      description: error instanceof Error ? error.message : 'Une erreur est survenue lors de l\'inscription',
       variant: 'destructive'
     })
+  } finally {
+    isSubmitting.value = false
   }
 })
 </script>
@@ -91,43 +155,62 @@ const onSubmit = form.handleSubmit(async (values) => {
 <template>
   <ClientOnly>
     <Form :form="form">
-      <form @submit="onSubmit" class="space-y-4">
+      <form @submit.prevent="onSubmit" class="space-y-4">
 
-        <FormField name="email" v-slot="{ componentField }">
+        <!-- Email -->
+        <FormField name="email" v-slot="{ value, errorMessage }">
           <FormItem>
             <FormLabel>Email</FormLabel>
             <FormControl>
-              <Input v-bind="componentField" type="email" placeholder="exemple@email.com" />
+              <Input
+                @update:modelValue="(val) => form.setFieldValue('email', val)"
+                type="email"
+                placeholder="exemple@email.com"
+                />
             </FormControl>
-            <FormMessage />
+            <FormMessage>{{ errorMessage }}</FormMessage>
           </FormItem>
         </FormField>
 
-        <FormField name="name" v-slot="{ componentField }">
+        <!-- Nom -->
+        <FormField name="name" v-slot="{ value, errorMessage }">
           <FormItem>
             <FormLabel>Nom</FormLabel>
             <FormControl>
-              <Input v-bind="componentField" type="text" placeholder="Votre nom" />
+              <Input
+                @update:modelValue="(val) => form.setFieldValue('name', val)"
+                type="text"
+                placeholder="Votre nom"
+              />
             </FormControl>
-            <FormMessage />
+            <FormMessage>{{ errorMessage }}</FormMessage>
           </FormItem>
         </FormField>
 
-        <FormField name="password" v-slot="{ componentField }">
+        <!-- Mot de passe -->
+        <FormField name="password" v-slot="{ value, errorMessage }">
           <FormItem>
             <FormLabel>Mot de passe</FormLabel>
             <FormControl>
-              <Input v-bind="componentField" type="password" placeholder="••••••••" />
+              <Input
+                @update:modelValue="(val) => form.setFieldValue('password', val)"
+                type="password"
+                placeholder="••••••••"
+              />
             </FormControl>
-            <FormMessage />
+            <FormMessage>{{ errorMessage }}</FormMessage>
           </FormItem>
         </FormField>
 
-        <FormField name="role" v-slot="{ componentField }">
+        <!-- Rôle -->
+        <FormField name="role" v-slot="{ value, errorMessage }">
           <FormItem>
             <FormLabel>Rôle</FormLabel>
             <FormControl>
-              <Select v-bind="componentField">
+              <Select
+                :modelValue="form.values.role"
+                @update:modelValue="(val) => form.setFieldValue('role', val)"
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Sélectionnez un rôle" />
                 </SelectTrigger>
@@ -141,15 +224,22 @@ const onSubmit = form.handleSubmit(async (values) => {
                 </SelectContent>
               </Select>
             </FormControl>
-            <FormMessage />
+            <FormMessage>{{ errorMessage }}</FormMessage>
           </FormItem>
         </FormField>
 
-        <FormField name="sectionId" v-slot="{ componentField }">
+        <!-- Section -->
+        <FormField name="sectionId" v-slot="{ value, errorMessage }">
           <FormItem>
             <FormLabel>Section</FormLabel>
             <FormControl>
-              <Select v-bind="componentField">
+              <Select
+                :modelValue="value"
+                @update:modelValue="(val) => {
+                  form.setFieldValue('sectionId', val)
+                  form.setFieldValue('groupId', '') // reset group on section change
+                }"
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Sélectionnez une section" />
                 </SelectTrigger>
@@ -166,29 +256,29 @@ const onSubmit = form.handleSubmit(async (values) => {
                 </SelectContent>
               </Select>
             </FormControl>
-            <FormMessage />
+            <FormMessage>{{ errorMessage }}</FormMessage>
           </FormItem>
         </FormField>
 
-        <FormField name="groupId" v-slot="{ componentField }">
+        <!-- Groupe -->
+        <FormField name="groupId" v-slot="{ value, errorMessage }">
           <FormItem>
             <FormLabel>Groupe</FormLabel>
             <FormControl>
               <Select 
-                v-bind="componentField"
-                :disabled="!form.values.sectionId || groups.length === 0"
-                class="bg-white text-black border border-gray-300 rounded-md shadow-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                :disabled="!form.values.sectionId"
+                :modelValue="value"
+                @update:modelValue="(val) => form.setFieldValue('groupId', val)"
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Sélectionnez un groupe" />
                 </SelectTrigger>
-                <SelectContent class="bg-white border border-gray-300 rounded-md shadow-lg mt-1">
+                <SelectContent>
                   <SelectGroup>
                     <SelectItem
                       v-for="group in groups"
                       :key="group.id"
                       :value="group.id"
-                      class="px-4 py-2 hover:bg-gray-100"
                     >
                       {{ group.name }}
                     </SelectItem>
@@ -196,14 +286,22 @@ const onSubmit = form.handleSubmit(async (values) => {
                 </SelectContent>
               </Select>
             </FormControl>
-            <FormMessage />
+            <FormMessage>{{ errorMessage }}</FormMessage>
           </FormItem>
         </FormField>
 
-        <Button type="submit" class="w-full">
-          S'inscrire
+        <!-- Bouton submit -->
+        <Button 
+          type="submit" 
+          class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+          :disabled="isSubmitting"
+        >
+          {{ isSubmitting ? 'Inscription en cours...' : 'S\'inscrire' }}
         </Button>
       </form>
+
+      <!-- Debug -->
+      <pre>{{ form.errors }}</pre>
     </Form>
   </ClientOnly>
-</template> 
+</template>

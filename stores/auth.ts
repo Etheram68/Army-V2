@@ -39,10 +39,10 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
-    async register(email: string, password: string, name?: string) {
+    async register(email: string, password: string, name: string, role: string, sectionId: string, groupId: string) {
       const { data, error } = await useFetch('/api/auth/register', {
         method: 'POST',
-        body: { email, password, name }
+        body: { email, password, name, role, sectionId, groupId }
       })
 
       if (error.value) throw new Error(error.value.message)
