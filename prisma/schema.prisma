@@ -1,0 +1,108 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id             String          @id @default(cuid())
+  email          String          @unique
+  name           String?
+  password       String
+  role           Role            @default(RESERVISTE)
+  groupId        String?
+  group          Group?          @relation(fields: [groupId], references: [id])
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  sessions       Session[]
+  participations Participation[]
+  Mission        Mission[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+model Compagnie {
+  id       String    @id @default(cuid())
+  name     String
+  sections Section[]
+  missions Mission[]
+}
+
+model Section {
+  id          String    @id @default(cuid())
+  name        String
+  compagnieId String
+  compagnie   Compagnie @relation(fields: [compagnieId], references: [id])
+  groupes     Group[]
+  missions    Mission[]
+}
+
+model Group {
+  id        String    @id @default(cuid())
+  name      String
+  sectionId String
+  section   Section   @relation(fields: [sectionId], references: [id])
+  members   User[]
+  missions  Mission[]
+}
+
+model Mission {
+  id             String            @id @default(cuid())
+  title          String
+  description    String?
+  date           DateTime
+  visibility     MissionVisibility
+  createdById    String
+  createdBy      User              @relation(fields: [createdById], references: [id])
+  groupId        String?
+  sectionId      String?
+  compagnieId    String?
+  participations Participation[]
+  Compagnie      Compagnie?        @relation(fields: [compagnieId], references: [id])
+  Section        Section?          @relation(fields: [sectionId], references: [id])
+  Group          Group?            @relation(fields: [groupId], references: [id])
+}
+
+model Participation {
+  id        String              @id @default(cuid())
+  userId    String
+  user      User                @relation(fields: [userId], references: [id])
+  missionId String
+  mission   Mission             @relation(fields: [missionId], references: [id])
+  status    ParticipationStatus
+  updatedAt DateTime            @updatedAt
+}
+
+enum Role {
+  RESERVISTE
+  CHEF_GROUPE
+  ADJOINT_CHEF_GROUPE
+  CHEF_SECTION
+  ADJOINT_CHEF_SECTION
+  COMMANDANT_UNITE
+  ADJOINT_COMMANDANT_UNITE
+  ADMIN
+}
+
+enum MissionVisibility {
+  GROUPE
+  SECTION
+  COMPAGNIE
+}
+
+enum ParticipationStatus {
+  PRESENT
+  ABSENT
+  INDEFINI
+}
