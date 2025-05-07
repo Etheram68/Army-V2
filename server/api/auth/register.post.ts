@@ -4,7 +4,7 @@ import { SignJWT } from 'jose'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
-  const { email, password, name } = body
+  const { email, password, name, role } = body
 
   const existingUser = await prisma.user.findUnique({
     where: { email }
@@ -24,7 +24,7 @@ export default defineEventHandler(async (event) => {
       email,
       password: hashedPassword,
       name,
-      role: 'USER'
+      role: role ?? 'RESERVISTE',
     }
   })
 

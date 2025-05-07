@@ -62,13 +62,19 @@ export const useAuthStore = defineStore('auth', {
     async checkAuth() {
       if (!this.token) return false
 
-      const { data } = await useFetch('/api/auth/check', { method: 'GET' })
+      const { data } = await useFetch('/api/auth/check', {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${this.token}`
+        }
+      })
       if (data.value?.user) {
         this.user = data.value.user as User
-        this.token = data.value.token
         return true
       }
 
+      this.token = null
+      this.user = null
       return false
     }
   },
