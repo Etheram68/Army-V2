@@ -1,10 +1,20 @@
 import { prisma } from '~/server/utils/prisma'
 import { hash } from 'argon2'
 import { SignJWT } from 'jose'
+import { userRegisterSchema } from '~/schemas/user';
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
-  const { email, password, name, role } = body
+  const parse = userRegisterSchema.safeParse(body);
+  if (!parse.success) {
+    return sendError(event, createError({
+      statusCode: 400,
+      statusMessage: 'Validation error',
+      data: parse.error.flatten().fieldErrors, // Renvoie les erreurs structurées
+    }));
+  }
+  
+  const { name, email, password, role, sectionId, groupId } = parse.data;
 
   const existingUser = await prisma.user.findUnique({
     where: { email }
@@ -24,7 +34,8 @@ export default defineEventHandler(async (event) => {
       email,
       password: hashedPassword,
       name,
-      role: role ?? 'RESERVISTE',
+      role: role,
+      groupId
     }
   })
 
