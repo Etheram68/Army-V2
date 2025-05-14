@@ -1,11 +1,11 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+import tailwindcss from '@tailwindcss/vite'
 
 export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
   devtools: { enabled: true },
   modules: [
     'shadcn-nuxt',
-    '@nuxtjs/tailwindcss',
     '@pinia/nuxt',
     'pinia-plugin-persistedstate/nuxt',
     '@prisma/nuxt',
@@ -26,6 +26,20 @@ export default defineNuxtConfig({
   runtimeConfig: {
     auth: {
       jwtSecret: process.env.JWT_SECRET || 'your-secret-key'
+    }
+  },
+  components: [
+    { path: '~/components/ui', prefix: 'Ui' }, // Auto-import as <UiButton />
+  ],
+  vite: {
+    plugins: [
+      tailwindcss(),
+    ],
+  },
+  postcss: {
+    plugins: {
+      '@tailwindcss/postcss': {},
+      autoprefixer: {}
     }
   }
 })
