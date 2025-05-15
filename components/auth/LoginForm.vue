@@ -1,22 +1,50 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useAuthStore } from '~/stores/auth'
+import { useForm } from 'vee-validate'
+import { toTypedSchema } from '@vee-validate/zod'
+import { userConnectionSchema, type UserConnectionInput } from '~/schemas/user'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { 
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle
+} from '@/components/ui/card'
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl
+} from '@/components/ui/form'
 import { useToast } from '@/components/ui/toast/use-toast'
 
-const email = ref('')
-const password = ref('')
-const isLoading = ref(false)
-const authStore = useAuthStore()
-const router = useRouter()
-const { toast } = useToast()
 
-const handleSubmit = async () => {
+const router = useRouter()
+const authStore = useAuthStore()
+const { toast } = useToast()
+const isSubmitting = ref(false)
+
+const { handleSubmit, errors, defineField, setFieldError } = useForm<UserConnectionInput>({
+  validationSchema: toTypedSchema(userConnectionSchema)
+})
+
+const [email, emailAttrs] = defineField('email');
+const [password, passwordAttrs] = defineField('password');
+
+const onSubmit =  handleSubmit(async (values) => {
+  isSubmitting.value = true
   try {
-    isLoading.value = true
-    await authStore.login(email.value, password.value)
+    await authStore.login(values.email, values.password)
+    toast({
+      title: 'Connexion réussie',
+      description: 'Vous êtes connecté avec succès',
+      variant: 'default'
+    })
     router.push('/')
   } catch (error) {
     toast({
@@ -25,9 +53,9 @@ const handleSubmit = async () => {
       variant: 'destructive'
     })
   } finally {
-    isLoading.value = false
+    isSubmitting.value = false
   }
-}
+})
 </script>
 
 <template>
@@ -37,31 +65,48 @@ const handleSubmit = async () => {
       <CardDescription>Connectez-vous à votre compte</CardDescription>
     </CardHeader>
     <CardContent>
-      <form @submit.prevent="handleSubmit" class="space-y-4">
-        <div class="space-y-2">
-          <label for="email">Email</label>
-          <Input
-            id="email"
-            v-model="email"
-            type="email"
-            placeholder="votre@email.com"
-            required
-          />
-        </div>
-        <div class="space-y-2">
-          <label for="password">Mot de passe</label>
-          <Input
-            id="password"
-            v-model="password"
-            type="password"
-            placeholder="••••••••"
-            required
-          />
-        </div>
-        <Button type="submit" class="w-full" :disabled="isLoading">
-          {{ isLoading ? 'Connexion en cours...' : 'Se connecter' }}
-        </Button>
-      </form>
+      <Form>
+        <form @submit.prevent="onSubmit" class="space-y-4">
+
+          <!-- Email -->
+          <FormField name="email" v-slot="{ componentField }">
+            <FormItem>
+              <FormLabel for="email">Email</FormLabel>
+              <FormControl>
+                <Input
+                  id="email"
+                  v-bind="componentField"
+                  v-model="email"
+                  type="email"
+                  placeholder="votre@email.com"
+                  required
+                />
+              </FormControl>
+            </FormItem>
+          </FormField>
+
+          <!-- Password -->
+          <FormField name="password" v-slot="{ componentField }">
+            <FormItem>
+              <FormLabel for="password">Mot de passe</FormLabel>
+              <FormControl>
+                <Input
+                  id="password"
+                  v-bind="componentField"
+                  v-model="password"
+                  type="password"
+                  placeholder="••••••••"
+                  required
+                />
+              </FormControl>
+            </FormItem>
+          </FormField>
+
+          <Button type="submit" class="w-full" :disabled="isSubmitting">
+            {{ isSubmitting ? 'Connexion en cours...' : 'Se connecter' }}
+          </Button>
+        </form>
+      </Form>
     </CardContent>
     <CardFooter class="flex justify-center">
       <NuxtLink to="/register" class="text-sm text-primary hover:underline">

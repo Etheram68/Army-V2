@@ -22,3 +22,9 @@ export const userRegisterSchema = z.object({
   })
 
 export type UserRegisterInput = z.infer<typeof userRegisterSchema>;
+
+
+export const userConnectionSchema = z.object({
+  email: z.string().email('Email invalide'),
+  password: z.string(),
+})

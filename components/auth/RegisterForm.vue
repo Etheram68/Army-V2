@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { z } from 'zod'
 import { useForm } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
 import { userRegisterSchema, type UserRegisterInput } from '~/schemas/user';
@@ -188,17 +187,16 @@ const onSubmit = handleSubmit(async (values) => {
               <Select
                 v-bind="componentField"
                 v-model="role"
-                class="bg-white text-black border border-gray-300 rounded-md shadow-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Sélectionnez un rôle" />
                 </SelectTrigger>
-                <SelectContent class="bg-white border border-gray-300 rounded-md shadow-lg mt-1">
+                <SelectContent>
                   <SelectGroup>
-                    <SelectItem class="px-4 py-2 hover:bg-gray-100" value="RESERVISTE">Réserviste</SelectItem>
-                    <SelectItem class="px-4 py-2 hover:bg-gray-100" value="CHEF_GROUPE">Chef de groupe</SelectItem>
-                    <SelectItem class="px-4 py-2 hover:bg-gray-100" value="CHEF_SECTION">Chef de section</SelectItem>
-                    <SelectItem class="px-4 py-2 hover:bg-gray-100" value="COMMANDANT_UNITE">Commandant d'unité</SelectItem>
+                    <SelectItem value="RESERVISTE">Réserviste</SelectItem>
+                    <SelectItem value="CHEF_GROUPE">Chef de groupe</SelectItem>
+                    <SelectItem value="CHEF_SECTION">Chef de section</SelectItem>
+                    <SelectItem value="COMMANDANT_UNITE">Commandant d'unité</SelectItem>
                   </SelectGroup>
                 </SelectContent>
               </Select>
@@ -213,14 +211,13 @@ const onSubmit = handleSubmit(async (values) => {
             <FormLabel>Section</FormLabel>
             <FormControl>
               <Select
-                class="bg-white text-black border border-gray-300 rounded-md shadow-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 v-bind="componentField"
                 v-model="sectionId"
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Sélectionnez une section" />
                 </SelectTrigger>
-                <SelectContent class="bg-white border border-gray-300 rounded-md shadow-lg mt-1">
+                <SelectContent>
                   <SelectGroup>
                     <SelectItem
                       v-for="section in sections"
@@ -243,7 +240,6 @@ const onSubmit = handleSubmit(async (values) => {
             <FormLabel>Groupe</FormLabel>
             <FormControl>
               <Select
-                class="bg-white text-black border border-gray-300 rounded-md shadow-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 v-bind="componentField"
                 v-model="groupId"
                 :disabled="!sectionId || !groups.length"
@@ -251,13 +247,12 @@ const onSubmit = handleSubmit(async (values) => {
                 <SelectTrigger>
                   <SelectValue placeholder="Sélectionnez un groupe" />
                 </SelectTrigger>
-                <SelectContent class="bg-white border border-gray-300 rounded-md shadow-lg mt-1">
+                <SelectContent>
                   <SelectGroup>
                     <SelectItem
                       v-for="group in groups"
                       :key="group.id"
                       :value="group.id"
-                      class="px-4 py-2 hover:bg-gray-100"
                     >
                       {{ group.name }}
                     </SelectItem>
@@ -272,15 +267,12 @@ const onSubmit = handleSubmit(async (values) => {
         <!-- Bouton submit -->
         <Button 
           type="submit" 
-          class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+          class="w-full font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
           :disabled="isSubmitting"
         >
           {{ isSubmitting ? 'Inscription en cours...' : 'S\'inscrire' }}
         </Button>
       </form>
-
-      <!-- Debug -->
-      <pre>{{ errors }}</pre>
     </Form>
   </ClientOnly>
 </template>
