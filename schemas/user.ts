@@ -28,3 +28,5 @@ export const userConnectionSchema = z.object({
   email: z.string().email('Email invalide'),
   password: z.string(),
 })
+
+export type UserConnectionInput = z.infer<typeof userConnectionSchema>;

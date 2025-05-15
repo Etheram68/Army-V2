@@ -1,0 +1,281 @@
+<script setup lang="ts">
+import { z } from 'zod'
+import { useForm } from 'vee-validate'
+import { toTypedSchema } from '@vee-validate/zod'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import { Textarea } from '@/components/ui/textarea'
+import {
+  Form, FormItem, FormField, FormControl, FormLabel, FormMessage
+} from '@/components/ui/form'
+import {
+  Select, SelectTrigger, SelectValue, SelectContent, SelectItem, SelectGroup
+} from '@/components/ui/select'
+import { useToast } from '@/components/ui/toast/use-toast'
+import { useAuthStore } from '~/stores/auth'
+
+const { toast } = useToast()
+const router = useRouter()
+const auth = useAuthStore()
+
+const missionSchema = z.object({
+  title: z.string().min(1, 'Le titre est requis'),
+  description: z.string().optional(),
+  startDate: z.string().min(1, 'Date de début requise'),
+  endDate: z.string().min(1, 'Date de fin requise'),
+  visibility: z.enum(['GROUPE', 'SECTION', 'COMPAGNIE']),
+  groupId: z.string().optional(),
+  sectionId: z.string().optional(),
+  compagnieId: z.string().optional(),
+})
+
+const { handleSubmit, errors, defineField, values } = useForm({
+  validationSchema: toTypedSchema(missionSchema),
+})
+
+const [title, titleAttrs] = defineField('title')
+const [description, descriptionAttrs] = defineField('description')
+const [startDate, startDateAttrs] = defineField('startDate')
+const [endDate, endDateAttrs] = defineField('endDate')
+const [visibility, visibilityAttrs] = defineField('visibility')
+const [groupId, groupIdAttrs] = defineField('groupId')
+const [sectionId, sectionIdAttrs] = defineField('sectionId')
+const [compagnieId, compagnieIdAttrs] = defineField('compagnieId')
+// const visibility = ref<'COMPAGNIE' | 'SECTION' | 'GROUPE' | null>(null)
+
+// Données dynamiques
+const compagnies = ref<{ id: string; name: string }[]>([])
+const sections = ref<{ id: string; name: string }[]>([])
+const groups = ref<{ id: string; name: string }[]>([])
+
+
+// Champs liés
+const selectedSectionId = ref<string | null>('')
+const selectedCompagnieId = ref<string | null>('')
+const selectedGroupId = ref<string | null>(null)
+
+// Chargement des Compagnies au montage
+onMounted(async () => {
+  try {
+    const res = await $fetch('/api/compagnies')
+    compagnies.value = res
+  } catch (e) {
+    toast({
+      title: "Erreur",
+      description: "Impossible de charger les Compagnies.",
+      variant: 'destructive'
+    })
+  }
+})
+
+// Watch pour charger les sections liés à la compagnie sélectionnée
+watch(selectedCompagnieId, async (compagnieId) => {
+  if (!compagnieId || visibility.value === 'COMPAGNIE') return
+  try {
+    const res = await $fetch(`/api/compagnies/${compagnieId}/sections`)
+    sections.value = res
+  } catch (e) {
+    toast({
+      title: 'Erreur',
+      description: 'Impossible de charger les sections.',
+      variant: 'destructive'
+    })
+  }
+})
+
+// Watch pour charger les groupes liés à la section sélectionnée
+watch(selectedSectionId, async (sectionId) => {
+  if (!sectionId || visibility.value !== 'GROUPE') return
+  try {
+    const res = await $fetch(`/api/sections/${sectionId}/groups`)
+    groups.value = res
+  } catch (e) {
+    toast({
+      title: 'Erreur',
+      description: 'Impossible de charger les groupes.',
+      variant: 'destructive'
+    })
+  }
+})
+
+const isSubmitting = ref(false)
+
+const onSubmit = handleSubmit(async (formValues) => {
+  try {
+    isSubmitting.value = true
+
+    const payload = {
+      ...formValues,
+      startDate: new Date(formValues.startDate).toISOString(),
+      endDate: new Date(formValues.endDate).toISOString(),
+    }
+
+    const response = await useAuthFetch('/api/missions/create', {
+      method: 'POST',
+      body: payload
+    })
+
+    toast({
+      title: 'Mission créée',
+      description: 'La mission a été ajoutée avec succès',
+    })
+
+    router.push('/missions')
+  } catch (error: any) {
+    toast({
+      title: 'Erreur',
+      description: error?.data?.message ?? 'Erreur lors de la création de la mission',
+      variant: 'destructive',
+    })
+  } finally {
+    isSubmitting.value = false
+  }
+})
+definePageMeta({
+  middleware: ['auth'],
+  requiresAuth: true,
+  requiresAdmin: false
+})
+</script>
+
+<template>
+  <ClientOnly>
+    <Form>
+      <form @submit.prevent="onSubmit" class="space-y-6 max-w-xl mx-auto mt-10">
+
+        <!-- Titre -->
+        <FormField name="title" v-slot="{ componentField }">
+          <FormItem>
+            <FormLabel>Titre</FormLabel>
+            <FormControl>
+              <Input v-bind="componentField" v-model="title" placeholder="Nom de la mission" />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        </FormField>
+
+        <!-- Description -->
+        <FormField name="description" v-slot="{ componentField }">
+          <FormItem>
+            <FormLabel>Description</FormLabel>
+            <FormControl>
+              <Textarea v-bind="componentField" v-model="description" placeholder="Détail de la mission" />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        </FormField>
+
+        <div class="flex flex-col md:flex-row gap-4">
+          <!-- Date de début -->
+          <FormField name="startDate" v-slot="{ componentField }">
+            <FormItem class="w-full">
+              <FormLabel>Début</FormLabel>
+              <FormControl>
+                <Input type="date" v-bind="componentField" v-model="startDate" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          </FormField>
+
+          <!-- Date de fin -->
+          <FormField name="endDate" v-slot="{ componentField }">
+            <FormItem class="w-full">
+              <FormLabel>Fin</FormLabel>
+              <FormControl>
+                <Input type="date" v-bind="componentField" v-model="endDate" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          </FormField>
+        </div>
+
+        <!-- Visibilité -->
+        <FormField name="visibility" v-slot="{ componentField }">
+          <FormItem>
+            <FormLabel>Visibilité</FormLabel>
+            <FormControl>
+              <Select v-bind="componentField" v-model="visibility">
+                <SelectTrigger><SelectValue placeholder="Portée de la mission" /></SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectItem value="GROUPE">Groupe</SelectItem>
+                    <SelectItem value="SECTION">Section</SelectItem>
+                    <SelectItem value="COMPAGNIE">Compagnie</SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        </FormField>
+
+        <!-- Compagnie -->
+        <FormField name="compagnieId" v-if="visibility" v-slot="{ componentField }">
+          <FormItem>
+            <FormLabel>Compagnie concernée</FormLabel>
+            <FormControl>
+              <Select v-bind="componentField" v-model="selectedCompagnieId">
+                <SelectTrigger><SelectValue placeholder="Choisir une compagnie" /></SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectItem v-for="compagnie in compagnies" :key="compagnie.id" :value="compagnie.id">
+                      {{ compagnie.name }}
+                    </SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        </FormField>
+
+        <!-- Section -->
+        <FormField name="sectionId" v-if="visibility === 'SECTION' || visibility === 'GROUPE'" v-slot="{ componentField }">
+          <FormItem>
+            <FormLabel>Section concernée</FormLabel>
+            <FormControl>
+              <Select v-bind="componentField" v-model="selectedSectionId">
+                <SelectTrigger><SelectValue placeholder="Choisir une section" /></SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectItem v-for="section in sections" :key="section.id" :value="section.id">
+                      {{ section.name }}
+                    </SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        </FormField>
+
+        <!-- Groupe -->
+        <FormField name="groupId" v-if="visibility === 'GROUPE'" v-slot="{ componentField }">
+          <FormItem>
+            <FormLabel>Groupe concerné</FormLabel>
+            <FormControl>
+              <Select v-bind="componentField" v-model="selectedGroupId">
+                <SelectTrigger><SelectValue placeholder="Choisir un groupe" /></SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectItem v-for="group in groups" :key="group.id" :value="group.id">
+                      {{ group.name }}
+                    </SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        </FormField>
+
+        <!-- Bouton -->
+        <Button type="submit" class="w-full" :disabled="isSubmitting">
+          {{ isSubmitting ? 'Création en cours...' : 'Créer la mission' }}
+        </Button>
+      </form>
+
+      <pre>{{ errors }}</pre>
+    </Form>
+  </ClientOnly>
+</template>

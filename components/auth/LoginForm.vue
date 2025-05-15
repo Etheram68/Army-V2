@@ -27,6 +27,7 @@ import { useToast } from '@/components/ui/toast/use-toast'
 const router = useRouter()
 const authStore = useAuthStore()
 const { toast } = useToast()
+
 const isSubmitting = ref(false)
 
 const { handleSubmit, errors, defineField, setFieldError } = useForm<UserConnectionInput>({

@@ -54,7 +54,7 @@ export const useAuthStore = defineStore('auth', {
     },
 
     async logout() {
-      await useFetch('/api/auth/logout', { method: 'POST' })
+      await useAuthFetch('/api/auth/logout', { method: 'POST' })
       this.user = null
       this.token = null
     },

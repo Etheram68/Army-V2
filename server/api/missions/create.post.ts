@@ -1,5 +1,5 @@
 import { prisma } from '~/server/utils/prisma'
-import { requireAuth } from '~/server/utils/requireAuth'
+import { requireAuthFromCookie } from '~/server/utils/requireAuth'
 import { requireRole } from '~/server/utils/requireRole'
 import { z } from 'zod'
 
@@ -7,7 +7,8 @@ import { z } from 'zod'
 const bodySchema = z.object({
   title: z.string().min(1),
   description: z.string().optional(),
-  date: z.string().transform((val) => new Date(val)),
+  startDate: z.string().transform((val) => new Date(val)),
+  endDate: z.string().transform((val) => new Date(val)),
   visibility: z.enum(['GROUPE', 'SECTION', 'COMPAGNIE']),
   groupId: z.string().optional(),
   sectionId: z.string().optional(),
@@ -16,6 +17,7 @@ const bodySchema = z.object({
 
 export default defineEventHandler(async (event) => {
   const user = await requireAuth(event)
+  console.log(user)
   await requireRole(event, ['CHEF_GROUPE', 'CHEF_SECTION', 'COMMANDANT_UNITE'])
 
   const body = await readBody(event)
@@ -24,7 +26,16 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Requête invalide' })
   }
 
-  const { title, description, date, visibility, groupId, sectionId, compagnieId } = parsed.data
+  const {
+    title,
+    description,
+    startDate,
+    endDate,
+    visibility,
+    groupId,
+    sectionId,
+    compagnieId
+  } = parsed.data
 
   // Contrôle des permissions en fonction du rôle
   const allowedRoles = {
@@ -52,7 +63,8 @@ export default defineEventHandler(async (event) => {
     data: {
       title,
       description,
-      date,
+      startDate,
+      endDate,
       visibility,
       createdById: user.id,
       groupId: groupId ?? null,

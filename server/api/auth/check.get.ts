@@ -1,7 +1,7 @@
-import { getUserFromSession } from '~/server/utils/auth'
+import { getUserFromCookie } from '~/server/utils/auth'
 
 export default defineEventHandler(async (event) => {
-  const user = await getUserFromSession(event)
+  const user = await getUserFromCookie(event)
 
   if (!user) {
     return { user: null }

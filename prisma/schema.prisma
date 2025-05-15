@@ -61,7 +61,8 @@ model Mission {
   id           String     @id @default(cuid())
   title        String
   description  String?
-  date         DateTime
+  startDate   DateTime
+  endDate     DateTime
   visibility   MissionVisibility
   createdById  String
   createdBy    User       @relation("UserCreatedMissions", fields: [createdById], references: [id])

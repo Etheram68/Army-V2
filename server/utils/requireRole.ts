@@ -1,8 +1,8 @@
 import { H3Event } from 'h3'
-import { getUserFromSession } from '~/server/utils/auth'
+import { getUserFromCookie } from '~/server/utils/auth'
 
 export async function requireRole(event: H3Event, allowedRoles: string[]) {
-  const user = await getUserFromSession(event)
+  const user = await getUserFromCookie(event)
   if (!user) {
     throw createError({ statusCode: 401, message: 'Non authentifié' })
   }

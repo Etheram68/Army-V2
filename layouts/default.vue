@@ -1,13 +1,6 @@
 <script setup lang="ts">
 import AppFooter from '~/components/layout/AppFooter.vue'
 import AppHeader from '~/components/layout/AppHeader.vue'
-import { useAuthStore } from '~/stores/auth'
-
-// Vérification de l'authentification au chargement de l'application
-const authStore = useAuthStore()
-onMounted(async () => {
-  await authStore.checkAuth()
-})
 </script>
 
 <template>

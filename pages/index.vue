@@ -45,6 +45,12 @@ definePageMeta({
           </ul>
         </CardContent>
       </Card>
+      <NuxtLink
+            to="/missions/create"
+            class="underline underline-offset-4 hover:text-primary"
+          >
+            Ajouter une missions
+          </NuxtLink>
     </section>
   </div>
 </template> 
