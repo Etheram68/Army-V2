@@ -48,12 +48,6 @@ const compagnies = ref<{ id: string; name: string }[]>([])
 const sections = ref<{ id: string; name: string }[]>([])
 const groups = ref<{ id: string; name: string }[]>([])
 
-
-// Champs liés
-const selectedSectionId = ref<string | null>('')
-const selectedCompagnieId = ref<string | null>('')
-const selectedGroupId = ref<string | null>(null)
-
 // Chargement des Compagnies au montage
 onMounted(async () => {
   try {
@@ -69,7 +63,7 @@ onMounted(async () => {
 })
 
 // Watch pour charger les sections liés à la compagnie sélectionnée
-watch(selectedCompagnieId, async (compagnieId) => {
+watch(compagnieId, async (compagnieId) => {
   if (!compagnieId || visibility.value === 'COMPAGNIE') return
   try {
     const res = await $fetch(`/api/compagnies/${compagnieId}/sections`)
@@ -84,7 +78,7 @@ watch(selectedCompagnieId, async (compagnieId) => {
 })
 
 // Watch pour charger les groupes liés à la section sélectionnée
-watch(selectedSectionId, async (sectionId) => {
+watch(sectionId, async (sectionId) => {
   if (!sectionId || visibility.value !== 'GROUPE') return
   try {
     const res = await $fetch(`/api/sections/${sectionId}/groups`)
@@ -214,7 +208,7 @@ definePageMeta({
           <FormItem>
             <FormLabel>Compagnie concernée</FormLabel>
             <FormControl>
-              <Select v-bind="componentField" v-model="selectedCompagnieId">
+              <Select v-bind="componentField" v-model="compagnieId">
                 <SelectTrigger><SelectValue placeholder="Choisir une compagnie" /></SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
@@ -234,7 +228,7 @@ definePageMeta({
           <FormItem>
             <FormLabel>Section concernée</FormLabel>
             <FormControl>
-              <Select v-bind="componentField" v-model="selectedSectionId">
+              <Select v-bind="componentField" v-model="sectionId">
                 <SelectTrigger><SelectValue placeholder="Choisir une section" /></SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
@@ -254,7 +248,7 @@ definePageMeta({
           <FormItem>
             <FormLabel>Groupe concerné</FormLabel>
             <FormControl>
-              <Select v-bind="componentField" v-model="selectedGroupId">
+              <Select v-bind="componentField" v-model="groupId">
                 <SelectTrigger><SelectValue placeholder="Choisir un groupe" /></SelectTrigger>
                 <SelectContent>
                   <SelectGroup>

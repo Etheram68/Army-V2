@@ -1,7 +1,17 @@
 <script setup lang="ts">
 import { useAuthStore } from '~/stores/auth'
+import { useThemeStore } from '~/stores/theme'
+import { Sun, Moon } from 'lucide-vue-next'
+import { Button } from '@/components/ui/button'
+import { Switch } from '@/components/ui/switch'
 
 const authStore = useAuthStore()
+const themeStore = useThemeStore()
+
+// Initialiser le thème au montage du composant
+onMounted(() => {
+  themeStore.initTheme()
+})
 </script>
 
 <template>
@@ -12,6 +22,15 @@ const authStore = useAuthStore()
       </NuxtLink>
       
       <nav class="flex items-center gap-4">
+        <div class="flex items-center gap-2">
+          <Sun class="h-4 w-4" />
+          <Switch
+            :model-value="themeStore.isDark"
+            @update:model-value="themeStore.toggleTheme"
+          />
+          <Moon class="h-4 w-4" />
+        </div>
+
         <template v-if="authStore.isAuthenticated">
           <NuxtLink to="/dashboard" class="hover:text-primary">
             Tableau de bord

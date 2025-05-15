@@ -5,7 +5,7 @@ interface User {
   id: string
   email: string
   name: string | null
-  role: 'USER' | 'ADMIN'
+  role: 'RESERVISTE' | 'CHEF_GROUPE' | 'CHEF_SECTION' | 'COMMANDANT_UNITE'
 }
 
 interface AuthState {
@@ -21,7 +21,7 @@ export const useAuthStore = defineStore('auth', {
 
   getters: {
     isAuthenticated: (state) => !!state.user,
-    isAdmin: (state) => state.user?.role === 'ADMIN'
+    isAdmin: (state) => state.user?.role === 'COMMANDANT_UNITE'
   },
 
   actions: {

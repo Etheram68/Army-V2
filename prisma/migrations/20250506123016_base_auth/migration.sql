@@ -5,11 +5,11 @@
 
 */
 -- CreateEnum
-CREATE TYPE "Role" AS ENUM ('USER', 'ADMIN');
+CREATE TYPE "Role" AS ENUM ('RESERVISTE', 'CHEF_GROUPE', 'CHEF_SECTION', 'COMMANDANT_UNITE');
 
 -- AlterTable
 ALTER TABLE "User" ADD COLUMN     "password" TEXT NOT NULL,
-ADD COLUMN     "role" "Role" NOT NULL DEFAULT 'USER';
+ADD COLUMN     "role" "Role" NOT NULL DEFAULT 'RESERVISTE';
 
 -- CreateTable
 CREATE TABLE "Session" (

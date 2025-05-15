@@ -1,6 +1,6 @@
 import { prisma } from '~/server/utils/prisma'
-import { requireAuthFromCookie } from '~/server/utils/requireAuth'
 import { requireRole } from '~/server/utils/requireRole'
+import { requireAuth } from '~/server/utils/requireAuth'
 import { z } from 'zod'
 
 
@@ -19,6 +19,7 @@ export default defineEventHandler(async (event) => {
   const user = await requireAuth(event)
   console.log(user)
   await requireRole(event, ['CHEF_GROUPE', 'CHEF_SECTION', 'COMMANDANT_UNITE'])
+
 
   const body = await readBody(event)
   const parsed = bodySchema.safeParse(body)
