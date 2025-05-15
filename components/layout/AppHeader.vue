@@ -22,24 +22,26 @@ onMounted(() => {
       </NuxtLink>
       
       <nav class="flex items-center gap-4">
-        <div class="flex items-center gap-2">
-          <Sun class="h-4 w-4" />
-          <Switch
-            :model-value="themeStore.isDark"
-            @update:model-value="themeStore.toggleTheme"
-          />
-          <Moon class="h-4 w-4" />
-        </div>
-
         <template v-if="authStore.isAuthenticated">
           <NuxtLink to="/dashboard" class="hover:text-primary">
             Tableau de bord
+          </NuxtLink>
+          <NuxtLink to="/missions" class="hover:text-primary">
+            Missions
           </NuxtLink>
           <template v-if="authStore.isAdmin">
             <NuxtLink to="/admin" class="hover:text-primary">
               Administration
             </NuxtLink>
           </template>
+          <div class="flex items-center gap-2">
+            <Sun class="h-4 w-4" />
+            <Switch
+              :model-value="themeStore.isDark"
+              @update:model-value="themeStore.toggleTheme"
+            />
+            <Moon class="h-4 w-4" />
+          </div>
           <Button variant="ghost" @click="authStore.logout">
             Déconnexion
           </Button>

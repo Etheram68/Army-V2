@@ -5,6 +5,7 @@ import { useAuthStore } from '~/stores/auth'
 import { useAuthFetch } from '~/composables/useAuthFetch'
 import { Button } from '~/components/ui/button'
 import { Badge } from '~/components/ui/badge'
+import { Separator } from '~/components/ui/separator'
 import { 
   Card,
   CardContent,
@@ -117,6 +118,8 @@ const updateParticipationStatus = async (status: 'PRESENT' | 'ABSENT' | 'INDEFIN
       <h1 class="text-3xl font-bold">Détails de la Mission</h1>
     </div>
 
+    <Separator />
+
     <div v-if="pending" class="flex justify-center items-center min-h-[400px]">
       <div class="text-center space-y-4">
         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
@@ -130,6 +133,7 @@ const updateParticipationStatus = async (status: 'PRESENT' | 'ABSENT' | 'INDEFIN
         <Button @click="router.back()">Retour</Button>
       </div>
     </div>
+
 
     <div v-else-if="mission" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
       <!-- Informations principales -->
@@ -148,14 +152,14 @@ const updateParticipationStatus = async (status: 'PRESENT' | 'ABSENT' | 'INDEFIN
                   <Calendar class="h-5 w-5" />
                   <span>Date de début</span>
                 </div>
-                <p class="text-lg">{{ new Date(mission.startDate).toLocaleDateString() }}</p>
+                <p class="text-lg">{{ new Date(mission.startDate).toLocaleDateString("fr-FR") }}</p>
               </div>
               <div class="space-y-2">
                 <div class="flex items-center gap-2 text-muted-foreground">
                   <Calendar class="h-5 w-5" />
                   <span>Date de fin</span>
                 </div>
-                <p class="text-lg">{{ new Date(mission.endDate).toLocaleDateString() }}</p>
+                <p class="text-lg">{{ new Date(mission.endDate).toLocaleDateString("fr-FR") }}</p>
               </div>
             </div>
 

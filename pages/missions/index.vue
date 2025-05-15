@@ -23,6 +23,7 @@ interface Mission {
   startDate: string
   endDate: string
   participantsCount: number
+  hasParticipated: boolean
 }
 
 const auth = useAuthStore()
@@ -76,9 +77,14 @@ watchEffect(async () => {
       <Card v-for="mission in missions" :key="mission.id" class="group hover:shadow-lg transition-all duration-300">
         <CardHeader class="space-y-1">
           <div class="flex items-start justify-between">
-            <CardTitle class="text-xl group-hover:text-primary transition-colors">
-              {{ mission.title }}
-            </CardTitle>
+            <div class="flex items-center gap-2">
+              <CardTitle class="text-xl group-hover:text-primary transition-colors">
+                {{ mission.title }}
+              </CardTitle>
+              <Badge v-if="!mission.hasParticipated" variant="secondary" class="bg-green-500 hover:bg-green-600">
+                Nouveau
+              </Badge>
+            </div>
             <Badge variant="default" class="ml-2">
               {{ mission.participantsCount }} <UsersIcon class="w-4 h-4 ml-1" />
             </Badge>
@@ -91,11 +97,11 @@ watchEffect(async () => {
           <div class="space-y-3">
             <div class="flex items-center gap-2 text-sm text-muted-foreground">
               <CalendarIcon class="w-4 h-4" />
-              <span>Du {{ new Date(mission.startDate).toLocaleDateString() }}</span>
+              <span>Du {{ new Date(mission.startDate).toLocaleDateString("fr-FR") }}</span>
             </div>
             <div class="flex items-center gap-2 text-sm text-muted-foreground">
               <CalendarIcon class="w-4 h-4" />
-              <span>Au {{ new Date(mission.endDate).toLocaleDateString() }}</span>
+              <span>Au {{ new Date(mission.endDate).toLocaleDateString("fr-FR") }}</span>
             </div>
           </div>
         </CardContent>

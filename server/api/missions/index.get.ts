@@ -77,7 +77,7 @@ export default defineEventHandler(async (event) => {
       where,
       skip,
       take,
-      orderBy: { startDate: 'desc' },
+      orderBy: { startDate: 'asc' },
       include: {
         compagnie: { select: { name: true } },
         section: { select: { name: true } },
@@ -85,6 +85,14 @@ export default defineEventHandler(async (event) => {
         _count: {
           select: {
             participations: true
+          }
+        },
+        participations: {
+          where: {
+            userId: user.id
+          },
+          select: {
+            id: true
           }
         }
       },
@@ -99,7 +107,8 @@ export default defineEventHandler(async (event) => {
       description: mission.description,
       startDate: mission.startDate,
       endDate: mission.endDate,
-      participantsCount: mission._count.participations
+      participantsCount: mission._count.participations,
+      hasParticipated: mission.participations.length > 0
     })),
     total
   }

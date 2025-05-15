@@ -268,8 +268,6 @@ definePageMeta({
           {{ isSubmitting ? 'Création en cours...' : 'Créer la mission' }}
         </Button>
       </form>
-
-      <pre>{{ errors }}</pre>
     </Form>
   </ClientOnly>
 </template>
