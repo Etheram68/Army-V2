@@ -108,11 +108,19 @@ const onSubmit = handleSubmit(async (formValues) => {
       method: 'POST',
       body: payload
     })
-
-    toast({
-      title: 'Mission créée',
-      description: 'La mission a été ajoutée avec succès',
-    })
+    if (response.error.value) {
+      const message = response.error.value?.data?.message || 'Erreur inattendue lors de la mise à jour du statut.'
+      toast({
+        title: 'Erreur',
+        description: message,
+        variant: 'destructive'
+      })
+    } else {
+      toast({
+        title: 'Mission créée',
+        description: 'La mission a été ajoutée avec succès',
+      })
+    }
 
     router.push('/missions')
   } catch (error: any) {

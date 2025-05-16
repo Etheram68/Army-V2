@@ -2,7 +2,7 @@
 import { ref, watchEffect } from 'vue'
 import { useAuthStore } from '~/stores/auth'
 import { useAuthFetch } from '~/composables/useAuthFetch'
-import Spinner from '~/components/ui/spinner.vue'
+import { Spinner } from '~/components/ui/spinner'
 import { 
   Card,
   CardContent,
@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/card'
 import { Button } from '~/components/ui/button'
 import { Badge } from '~/components/ui/badge'
-import { CalendarIcon, UsersIcon, PlusIcon } from 'lucide-vue-next'
+import { CalendarIcon, UsersIcon, PlusIcon, AlertCircle } from 'lucide-vue-next'
 import { Separator } from '~/components/ui/separator'
 
 interface Mission {
@@ -34,16 +34,18 @@ const missions = ref<Mission[]>([])
 const canCreate = ['CHEF_GROUPE', 'CHEF_SECTION', 'COMMANDANT_UNITE'].includes(auth.user?.role || '')
 
 // 🔁 Chargement des missions à chaque changement de filtre/page
+const loading = ref(true)
+
 watchEffect(async () => {
+  loading.value = true
   const { data } = await useAuthFetch<{ missions: Mission[], total: number }>('/api/missions', {
-    query: {
-      page: page.value
-    }
+    query: { page: page.value }
   })
   if (data.value) {
     missions.value = data.value.missions
     total.value = data.value.total
   }
+  loading.value = false
 })
 </script>
 
@@ -66,11 +68,17 @@ watchEffect(async () => {
     </div>
 
     <!-- Liste des missions -->
-    <div v-if="!missions.length" class="flex justify-center items-center min-h-[400px]">
+    <div v-if="loading" class="flex justify-center items-center min-h-[400px]">
       <div class="text-center space-y-4">
         <Spinner class="w-8 h-8 mx-auto" />
         <p class="text-muted-foreground">Chargement des missions...</p>
       </div>
+    </div>
+
+    <div v-else-if="missions.length === 0" class="flex flex-col justify-center items-center min-h-[400px] text-center space-y-4 text-muted-foreground">
+      <AlertCircle class="w-16 h-16 text-gray-400" />
+      <p class="text-lg font-semibold">Aucune mission pour le moment</p>
+      <p class="max-w-xs text-sm text-gray-500">Tout est calme pour l’instant, mais restez prêt ! Dès qu’une mission arrive, vous serez informé.</p>
     </div>
 
     <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
