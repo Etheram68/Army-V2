@@ -42,36 +42,29 @@ export default defineEventHandler(async (event) => {
   switch (user.role) {
     case 'COMMANDANT_UNITE':
       missionWhere.OR = [
-        { compagnieId },
-        { section: { compagnieId } },
-        { group: { section: { compagnieId } } }
+        { visibility: 'COMPAGNIE', compagnieId },
+        { visibility: 'SECTION', section: { is: { compagnieId } } },
+        { visibility: 'GROUPE', group: { is: { section: { is: { compagnieId } } } } }
       ]
       break
-
+  
     case 'CHEF_SECTION':
       missionWhere.OR = [
-        { compagnieId },
-        { sectionId },
-        { group: { sectionId } }
+        { visibility: 'COMPAGNIE', compagnieId },
+        { visibility: 'SECTION', sectionId },
+        { visibility: 'GROUPE', group: { is: { sectionId } } }
       ]
       break
-
+  
     case 'CHEF_GROUPE':
-      missionWhere.OR = [
-        { compagnieId },
-        { sectionId },
-        { groupId }
-      ]
-      break
-
     case 'RESERVISTE':
       missionWhere.OR = [
-        { compagnieId },
-        { sectionId },
-        { groupId }
+        { visibility: 'COMPAGNIE', compagnieId },
+        { visibility: 'SECTION', sectionId },
+        { visibility: 'GROUPE', groupId }
       ]
       break
-
+  
     default:
       return { missions: [], total: 0 } // Rôle inconnu
   }
