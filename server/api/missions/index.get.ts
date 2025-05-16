@@ -86,34 +86,33 @@ export default defineEventHandler(async (event) => {
         compagnie: { select: { name: true } },
         section: { select: { name: true } },
         group: { select: { name: true } },
-        _count: {
-          select: {
-            participations: true
-          }
-        },
         participations: {
-          where: {
-            userId: user.id
-          },
           select: {
-            id: true
+            id: true,
+            status: true,
+            userId: true
           }
         }
-      },
+      }
     }),
-    prisma.mission.count({ where: missionWhere }),
+    prisma.mission.count({ where: missionWhere })
   ])
 
   return {
-    missions: missions.map(mission => ({
-      id: mission.id,
-      title: mission.title,
-      description: mission.description,
-      startDate: mission.startDate,
-      endDate: mission.endDate,
-      participantsCount: mission._count.participations,
-      hasParticipated: mission.participations.length > 0
-    })),
+    missions: missions.map(mission => {
+      const participantsPresent = mission.participations.filter(p => p.status === 'PRESENT').length
+      const hasParticipated = mission.participations.some(p => p.userId === user.id)
+
+      return {
+        id: mission.id,
+        title: mission.title,
+        description: mission.description,
+        startDate: mission.startDate,
+        endDate: mission.endDate,
+        participantsCount: participantsPresent,
+        hasParticipated
+      }
+    }),
     total
   }
 })
