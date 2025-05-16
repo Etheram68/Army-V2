@@ -9,7 +9,8 @@ export default defineNuxtConfig({
     '@pinia/nuxt',
     'pinia-plugin-persistedstate/nuxt',
     '@prisma/nuxt',
-    '@vee-validate/nuxt'
+    '@vee-validate/nuxt',
+    '@nuxtjs/google-fonts'
   ],
   css: ['~/assets/css/tailwind.css'],
   shadcn: {
@@ -41,5 +42,12 @@ export default defineNuxtConfig({
       '@tailwindcss/postcss': {},
       autoprefixer: {}
     }
+  },
+  googleFonts: {
+    families: {
+      Oxanium: true,
+      'Source+Code+Pro': true
+    },
+    display: 'swap',
   }
 })
