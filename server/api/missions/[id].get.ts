@@ -1,5 +1,6 @@
 import { prisma } from '~/server/utils/prisma'
 import { requireAuth } from '~/server/utils/requireAuth'
+import { hasAccessToMission } from '~/server/utils/missionAccess'
 
 export default defineEventHandler(async (event) => {
   const user = await requireAuth(event)
@@ -49,51 +50,12 @@ export default defineEventHandler(async (event) => {
   }
 
   // Vérification des permissions
-  const userWithRelations = await prisma.user.findUnique({
-    where: { id: user.id },
-    include: {
-      group: {
-        include: {
-          section: {
-            include: {
-              compagnie: true
-            }
-          }
-        }
-      }
-    }
-  })
-
-  if (!userWithRelations) {
-    throw createError({ statusCode: 404, message: 'Utilisateur non trouvé' })
-  }
-
-  const compagnieId = userWithRelations.group?.section?.compagnie?.id
-  const sectionId = userWithRelations.group?.section?.id
-  const groupId = userWithRelations.group?.id
-
-  let hasAccess = false
-
-  switch (user.role) {
-    case 'COMMANDANT_UNITE':
-      hasAccess = mission.compagnieId === compagnieId || 
-                 mission.section?.compagnieId === compagnieId || 
-                 mission.group?.section?.compagnieId === compagnieId
-      break
-    case 'CHEF_SECTION':
-      hasAccess = mission.sectionId === sectionId || 
-                 mission.group?.sectionId === sectionId
-      break
-    case 'CHEF_GROUPE':
-      hasAccess = mission.groupId === groupId
-      break
-    case 'RESERVISTE':
-      hasAccess = mission.participations.some(p => p.userId === user.id)
-      break
-  }
-
+  const hasAccess = await hasAccessToMission(user.id, missionId)
   if (!hasAccess) {
-    throw createError({ statusCode: 403, message: 'Accès non autorisé à cette mission' })
+    throw createError({
+      statusCode: 403,
+      message: 'Vous n\'avez pas la permission de participer à cette mission'
+    })
   }
 
   return {

@@ -33,53 +33,52 @@ export default defineEventHandler(async (event) => {
   const sectionId = userWithRelations.group?.section?.id
   const groupId = userWithRelations.group?.id
 
-  let roleScope: any = {}
+  let missionWhere: any = {
+    startDate: {
+      gte: new Date(Date.now() - 24 * 60 * 60 * 1000)
+    }
+  }
 
   switch (user.role) {
     case 'COMMANDANT_UNITE':
-      roleScope = {
-        OR: [
-          { compagnieId },
-          { section: { compagnieId } },
-          { group: { section: { compagnieId } } },
-        ],
-      }
+      missionWhere.OR = [
+        { compagnieId },
+        { section: { compagnieId } },
+        { group: { section: { compagnieId } } }
+      ]
       break
 
     case 'CHEF_SECTION':
-      roleScope = {
-        OR: [
-          { sectionId },
-          { group: { sectionId } },
-        ],
-      }
+      missionWhere.OR = [
+        { compagnieId },
+        { sectionId },
+        { group: { sectionId } }
+      ]
       break
 
     case 'CHEF_GROUPE':
-      roleScope = {
-        groupId,
-      }
+      missionWhere.OR = [
+        { compagnieId },
+        { sectionId },
+        { groupId }
+      ]
       break
 
     case 'RESERVISTE':
-    default:
-      return { missions: [], total: 0 }
-  }
+      missionWhere.OR = [
+        { compagnieId },
+        { sectionId },
+        { groupId }
+      ]
+      break
 
-  const where = {
-    AND: [
-      roleScope,
-      {
-        startDate: {
-          gte: new Date(Date.now() - 24 * 60 * 60 * 1000) // Date actuelle moins 24h
-        }
-      }
-    ],
+    default:
+      return { missions: [], total: 0 } // Rôle inconnu
   }
 
   const [missions, total] = await Promise.all([
     prisma.mission.findMany({
-      where,
+      where: missionWhere,
       skip,
       take,
       orderBy: { startDate: 'asc' },
@@ -102,7 +101,7 @@ export default defineEventHandler(async (event) => {
         }
       },
     }),
-    prisma.mission.count({ where }),
+    prisma.mission.count({ where: missionWhere }),
   ])
 
   return {
