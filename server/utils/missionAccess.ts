@@ -19,7 +19,7 @@ export async function hasAccessToMission(userId: string, missionId: string): Pro
     prisma.mission.findUnique({
       where: { id: missionId },
       include: {
-        compagnie: true,
+        participations: { select: { userId: true } },
         section: true,
         group: {
           include: {
@@ -29,9 +29,6 @@ export async function hasAccessToMission(userId: string, missionId: string): Pro
               }
             }
           }
-        },
-        participations: {
-          select: { userId: true }
         }
       }
     })
@@ -43,24 +40,32 @@ export async function hasAccessToMission(userId: string, missionId: string): Pro
   const sectionId = user.group?.section?.id
   const groupId = user.group?.id
 
-  const missionCompagnieId =
-    mission.compagnieId ||
-    mission.section?.compagnieId ||
-    mission.group?.section?.compagnieId
+  const { visibility } = mission
 
-  const missionSectionId =
-    mission.sectionId ||
-    mission.group?.sectionId
-    
-  const missionGroupId = mission.groupId
+  let access = false
 
-  const isInHierarchy = [
-    missionCompagnieId === compagnieId,
-    missionSectionId === sectionId,
-    missionGroupId === groupId
-  ].some(Boolean)
+  switch (user.role) {
+    case 'COMMANDANT_UNITE':
+      if (visibility === 'COMPAGNIE' && mission.compagnieId === compagnieId) access = true
+      if (visibility === 'SECTION' && mission.section?.compagnieId === compagnieId) access = true
+      if (visibility === 'GROUPE' && mission.group?.section?.compagnieId === compagnieId) access = true
+      break
+
+    case 'CHEF_SECTION':
+      if (visibility === 'COMPAGNIE' && mission.compagnieId === compagnieId) access = true
+      if (visibility === 'SECTION' && mission.section?.id === sectionId) access = true
+      if (visibility === 'GROUPE' && mission.group?.sectionId === sectionId) access = true
+      break
+
+    case 'CHEF_GROUPE':
+    case 'RESERVISTE':
+      if (visibility === 'COMPAGNIE' && mission.compagnieId === compagnieId) access = true
+      if (visibility === 'SECTION' && mission.section?.id === sectionId) access = true
+      if (visibility === 'GROUPE' && mission.group?.id === groupId) access = true
+      break
+  }
 
   const isParticipant = mission.participations.some(p => p.userId === userId)
 
-  return isInHierarchy || isParticipant
+  return access || isParticipant
 }
