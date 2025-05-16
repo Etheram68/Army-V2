@@ -68,7 +68,12 @@ export default defineEventHandler(async (event) => {
 
   const where = {
     AND: [
-      roleScope
+      roleScope,
+      {
+        startDate: {
+          gte: new Date(Date.now() - 24 * 60 * 60 * 1000) // Date actuelle moins 24h
+        }
+      }
     ],
   }
 

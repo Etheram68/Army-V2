@@ -24,6 +24,8 @@ import {
   BadgeHelp,
   BadgeMinus
 } from 'lucide-vue-next'
+import { useToast } from '@/components/ui/toast/use-toast'
+
 
 interface User {
   id: string
@@ -56,6 +58,7 @@ const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
 const mission = ref<Mission | null>(null)
+const { toast } = useToast()
 
 const { data, pending, error } = await useAuthFetch<Mission>(`/api/missions/${route.params.id}`)
 if (data.value) {
@@ -96,16 +99,30 @@ const getStatusText = (status: string) => {
 
 const updateParticipationStatus = async (status: 'PRESENT' | 'ABSENT' | 'INDEFINI') => {
   try {
-    await useAuthFetch(`/api/missions/${mission.value?.id}/participate`, {
+    const res = await useAuthFetch(`/api/missions/${mission.value?.id}/participate`, {
       method: 'POST',
       body: { status }
     })
+    if (res.error.value) {
+      const message = res.error.value?.data?.message || 'Erreur inattendue lors de la mise à jour du statut.'
+      toast({
+        title: 'Erreur',
+        description: message,
+        variant: 'destructive'
+      })
+    }
     // Rafraîchir les données
     await refreshNuxtData()
-  } catch (error) {
+  } catch (error: any) {
     console.error('Erreur lors de la mise à jour du statut:', error)
   }
 }
+
+const isMissionStarted = computed(() => {
+  if (!mission.value) return false
+  const now = new Date()
+  return new Date(mission.value.startDate) <= now
+})
 </script>
 
 <template>
@@ -228,7 +245,7 @@ const updateParticipationStatus = async (status: 'PRESENT' | 'ABSENT' | 'INDEFIN
 
       <!-- Carte de participation -->
       <div class="lg:col-span-1">
-        <Card>
+        <Card v-if="!isMissionStarted">
           <CardHeader>
             <CardTitle>Ma Participation</CardTitle>
             <CardDescription>
@@ -272,6 +289,14 @@ const updateParticipationStatus = async (status: 'PRESENT' | 'ABSENT' | 'INDEFIN
               </div>
             </div>
           </CardContent>
+        </Card>
+        <Card v-else>
+          <CardHeader>
+            <CardTitle>La mission a déjà commencé</CardTitle>
+            <CardDescription>
+              Vous ne pouvez plus modifier votre participation.
+            </CardDescription>
+          </CardHeader>
         </Card>
       </div>
     </div>
