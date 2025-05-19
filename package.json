@@ -8,7 +8,8 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
-    "seed": "npx tsx scripts/seedStructure.ts"
+    "seed": "npx tsx scripts/seedStructure.ts",
+    "seed:missions": "npx tsx scripts/seedMissions.ts"
   },
   "dependencies": {
     "@faker-js/faker": "^9.8.0",

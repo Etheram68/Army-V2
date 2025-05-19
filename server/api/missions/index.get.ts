@@ -7,7 +7,7 @@ export default defineEventHandler(async (event) => {
   const query = getQuery(event)
 
   const page = Number(query.page) || 1
-  const take = 10
+  const take = 9
   const skip = (page - 1) * take
 
   const userWithRelations = await prisma.user.findUnique({

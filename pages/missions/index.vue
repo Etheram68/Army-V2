@@ -35,6 +35,13 @@ const canCreate = ['CHEF_GROUPE', 'CHEF_SECTION', 'COMMANDANT_UNITE'].includes(a
 
 // 🔁 Chargement des missions à chaque changement de filtre/page
 const loading = ref(true)
+const totalPages = computed(() => Math.ceil(total.value / 9)) // 9 missions par page (comme 3 colonnes * 3 lignes)
+
+function goToPage(p: number) {
+  if (p >= 1 && p <= totalPages.value) {
+    page.value = p
+  }
+}
 
 watchEffect(async () => {
   loading.value = true
@@ -121,6 +128,40 @@ watchEffect(async () => {
           </Button>
         </CardFooter>
       </Card>
+    </div>
+    <!-- Pagination -->
+    <div class="flex justify-center mt-8">
+      <div class="inline-flex items-center gap-2">
+        <Button
+          variant="outline"
+          size="icon"
+          :disabled="page === 1"
+          @click="goToPage(page - 1)"
+        >
+          ←
+        </Button>
+
+        <div class="flex items-center gap-1">
+          <Button
+            v-for="p in totalPages"
+            :key="p"
+            :variant="p === page ? 'default' : 'ghost'"
+            class="w-10 h-10"
+            @click="goToPage(p)"
+          >
+            {{ p }}
+          </Button>
+        </div>
+
+        <Button
+          variant="outline"
+          size="icon"
+          :disabled="page === totalPages"
+          @click="goToPage(page + 1)"
+        >
+          →
+        </Button>
+      </div>
     </div>
   </div>
 </template>
