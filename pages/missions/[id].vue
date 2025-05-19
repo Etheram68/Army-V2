@@ -118,6 +118,31 @@ const updateParticipationStatus = async (status: 'PRESENT' | 'ABSENT' | 'INDEFIN
   }
 }
 
+const participantsPerPage = 5
+const currentPage = ref(1)
+const selectedStatus = ref<'ALL' | 'PRESENT' | 'ABSENT' | 'INDEFINI'>('ALL')
+
+const filteredParticipants = computed(() => {
+  if (!mission.value) return []
+  if (selectedStatus.value === 'ALL') return mission.value.participations
+  return mission.value.participations.filter(p => p.status === selectedStatus.value)
+})
+
+const paginatedParticipants = computed(() => {
+  const start = (currentPage.value - 1) * participantsPerPage
+  return filteredParticipants.value.slice(start, start + participantsPerPage)
+})
+
+const totalPages = computed(() =>
+  Math.ceil(filteredParticipants.value.length / participantsPerPage)
+)
+
+const goToPage = (page: number) => {
+  if (page >= 1 && page <= totalPages.value) {
+    currentPage.value = page
+  }
+}
+
 const isMissionStarted = computed(() => {
   if (!mission.value) return false
   const now = new Date()
@@ -211,18 +236,58 @@ const isMissionStarted = computed(() => {
           </CardFooter>
         </Card>
 
-        <!-- Liste des participants -->
-        <Card>
+        <!-- Liste des participants avec filtres et pagination -->
+        <Card class="max-h-[600px] flex flex-col">
           <CardHeader>
             <CardTitle>Participants</CardTitle>
             <CardDescription>
-              {{ mission.participations.length }} participant(s)
+              {{ filteredParticipants.length }} participant(s)
             </CardDescription>
+            <!-- Filtres -->
+            <div class="flex gap-2 mt-4 flex-wrap">
+              <Button
+                variant="outline"
+                size="sm"
+                :class="{ 'bg-primary text-white': selectedStatus === 'ALL' }"
+                @click="selectedStatus = 'ALL'; currentPage = 1"
+              >
+                Tous
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                :class="{ 'bg-green-500 text-white': selectedStatus === 'PRESENT' }"
+                @click="selectedStatus = 'PRESENT'; currentPage = 1"
+              >
+                Présents
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                :class="{ 'bg-red-500 text-white': selectedStatus === 'ABSENT' }"
+                @click="selectedStatus = 'ABSENT'; currentPage = 1"
+              >
+                Absents
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                :class="{ 'bg-yellow-500 text-white': selectedStatus === 'INDEFINI' }"
+                @click="selectedStatus = 'INDEFINI'; currentPage = 1"
+              >
+                Indéfinis
+              </Button>
+            </div>
           </CardHeader>
-          <CardContent>
+
+          <!-- Liste défilante -->
+          <CardContent class="overflow-y-auto flex-1">
             <div class="space-y-4">
-              <div v-for="participation in mission.participations" :key="participation.id" 
-                   class="flex items-center justify-between p-4 rounded-lg border">
+              <div
+                v-for="participation in paginatedParticipants"
+                :key="participation.id"
+                class="flex items-center justify-between p-4 rounded-lg border"
+              >
                 <div class="flex items-center gap-4">
                   <div class="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
                     <span class="text-lg font-medium">
@@ -240,7 +305,32 @@ const isMissionStarted = computed(() => {
               </div>
             </div>
           </CardContent>
+
+          <!-- Pagination statique -->
+          <CardFooter class="justify-between items-center">
+            <Button
+              variant="outline"
+              size="sm"
+              :disabled="currentPage === 1"
+              @click="goToPage(currentPage - 1)"
+            >
+              Précédent
+            </Button>
+            <p class="text-sm text-muted-foreground">
+              Page {{ currentPage }} sur {{ totalPages }}
+            </p>
+            <Button
+              variant="outline"
+              size="sm"
+              :disabled="currentPage === totalPages"
+              @click="goToPage(currentPage + 1)"
+            >
+              Suivant
+            </Button>
+          </CardFooter>
         </Card>
+
+
       </div>
 
       <!-- Carte de participation -->
