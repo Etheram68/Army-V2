@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Calendar, Building2, Users2, Users } from 'lucide-vue-next'
+import { Calendar, Building2, Users2, Users, SquarePenIcon } from 'lucide-vue-next'
 import { Button } from '~/components/ui/button'
 import {
   Card,
@@ -98,7 +98,12 @@ defineProps<Props>()
       </div>
     </CardContent>
     <CardFooter v-if="canEdit">
-      <Button class="w-full">Modifier la mission</Button>
+      <Button class="w-full">
+        <NuxtLink :to="`/missions/${mission.id}/edit` " class="flex items-center gap-2">
+            <SquarePenIcon class="w-5 h-5" />
+            Modifier la mission
+          </NuxtLink>
+      </Button>
     </CardFooter>
   </Card>
 </template> 

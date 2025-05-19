@@ -17,7 +17,12 @@ const bodySchema = z.object({
 
 export default defineEventHandler(async (event) => {
   const user = await requireAuth(event)
-  console.log(user)
+  if (!user) {
+    throw createError({
+      statusCode: 401,
+      message: 'Non authentifié'
+    })
+  }
   await requireRole(event, ['CHEF_GROUPE', 'CHEF_SECTION', 'COMMANDANT_UNITE'])
 
 

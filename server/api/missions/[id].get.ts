@@ -1,10 +1,11 @@
 import { prisma } from '~/server/utils/prisma'
+import { getRouterParam } from 'h3'
 import { requireAuth } from '~/server/utils/requireAuth'
 import { hasAccessToMission } from '~/server/utils/missionAccess'
 
 export default defineEventHandler(async (event) => {
   const user = await requireAuth(event)
-  const missionId = event.context.params?.id
+  const missionId = getRouterParam(event, 'id')
 
   if (!missionId) {
     throw createError({ statusCode: 400, message: 'ID de mission manquant' })
