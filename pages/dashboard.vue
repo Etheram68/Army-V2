@@ -37,11 +37,14 @@ const pendingMissionsPreview = computed(() =>
 )
 
 // Missions validées (status = PRESENT et à venir)
-const upcomingMissions = computed(() =>
+const allUpcomingMissions = computed(() =>
   allMissions.value?.filter((m: Mission) =>
     m.participations.some((p: Participation) => p.userId === userId && p.status === 'PRESENT') &&
     new Date(m.startDate) > new Date()
   ) ?? []
+)
+const upcomingMissionsPreview = computed(() =>
+  allUpcomingMissions.value.slice(0, 5)
 )
 
 const infoItems = [
@@ -58,7 +61,7 @@ const infoItems = [
     <!-- Résumé -->
     <MissionSummary
       :pending-count="allPendingMissions.length"
-      :upcoming-count="upcomingMissions.length"
+      :upcoming-count="allUpcomingMissions.length"
       :total-count="allMissions?.length ?? 0"
     />
 
@@ -84,7 +87,7 @@ const infoItems = [
 
     <!-- Missions à venir -->
     <MissionList
-      :missions="upcomingMissions"
+      :missions="upcomingMissionsPreview"
       title="Missions à venir"
       description="Participation confirmée"
       status="VALIDE"
