@@ -6,6 +6,8 @@ interface User {
   email: string
   name: string | null
   role: 'RESERVISTE' | 'CHEF_GROUPE' | 'CHEF_SECTION' | 'COMMANDANT_UNITE'
+  sectionId?: string
+  groupId?: string
 }
 
 interface AuthState {
@@ -20,8 +22,11 @@ export const useAuthStore = defineStore('auth', {
   }),
 
   getters: {
-    isAuthenticated: (state) => !!state.user,
-    isAdmin: (state) => state.user?.role === 'COMMANDANT_UNITE'
+    isAuthenticated: (state) => !!state.token,
+    isAdmin: (state) => state.user?.role === 'COMMANDANT_UNITE',
+    isChefSection: (state) => state.user?.role === 'CHEF_SECTION',
+    isChefGroupe: (state) => state.user?.role === 'CHEF_GROUPE',
+    isReserviste: (state) => state.user?.role === 'RESERVISTE'
   },
 
   actions: {
@@ -53,8 +58,7 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
-    async logout() {
-      await useAuthFetch('/api/auth/logout', { method: 'POST' })
+    logout() {
       this.user = null
       this.token = null
     },
@@ -76,6 +80,14 @@ export const useAuthStore = defineStore('auth', {
       this.token = null
       this.user = null
       return false
+    },
+
+    setUser(user: User | null) {
+      this.user = user
+    },
+
+    setToken(token: string | null) {
+      this.token = token
     }
   },
 
