@@ -92,17 +92,25 @@ watchEffect(async () => {
     </div>
 
     <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <Card v-for="mission in missions" :key="mission.id" class="group hover:shadow-lg transition-all duration-300">
+      <Card 
+        v-for="mission in missions"
+        :key="mission.id"
+        class="group hover:shadow-lg transition-all duration-300 relative"
+      >
         <CardHeader class="space-y-1">
           <div class="flex items-start justify-between">
             <div class="flex items-center gap-2">
               <CardTitle class="text-xl group-hover:text-primary transition-colors">
                 {{ mission.title }}
               </CardTitle>
-              <Badge v-if="!mission.hasParticipated" variant="secondary" class="bg-green-500 hover:bg-green-600">
-                Nouveau
-              </Badge>
             </div>
+            <Badge 
+              v-if="!mission.hasParticipated"
+              variant="success"
+              class="absolute -top-1.5 -left-3 bg-green-500 hover:bg-green-600 z-10 rounded-md shadow-md px-2 py-1 text-xs"
+            >
+              Nouveau
+            </Badge>
             <Badge variant="default" class="ml-2">
               {{ mission.participantsCount }} <UsersIcon class="w-4 h-4 ml-1" />
             </Badge>
