@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/card'
 import { Button } from '~/components/ui/button'
 import { Badge } from '~/components/ui/badge'
-import { CalendarIcon, UsersIcon, PlusIcon, AlertCircle } from 'lucide-vue-next'
+import { CalendarIcon, UsersIcon, PlusIcon, AlertCircle, Building2, Users2, Users } from 'lucide-vue-next'
 import { Separator } from '~/components/ui/separator'
 
 interface Mission {
@@ -23,7 +23,10 @@ interface Mission {
   startDate: string
   endDate: string
   participantsCount: number
-  hasParticipated: boolean
+  hasParticipated: boolean,
+  compagnie: { name: string } | null,
+  section: { name: string } | null,
+  group: { name: string } | null
 }
 
 const auth = useAuthStore()
@@ -109,14 +112,37 @@ watchEffect(async () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div class="space-y-3">
-            <div class="flex items-center gap-2 text-sm text-muted-foreground">
-              <CalendarIcon class="w-4 h-4" />
-              <span>Du {{ new Date(mission.startDate).toLocaleDateString("fr-FR") }}</span>
-            </div>
-            <div class="flex items-center gap-2 text-sm text-muted-foreground">
-              <CalendarIcon class="w-4 h-4" />
-              <span>Au {{ new Date(mission.endDate).toLocaleDateString("fr-FR") }}</span>
+          <div class="flex flex-col gap-3">
+            <!-- Ligne Dates + Portée -->
+            <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 text-sm text-muted-foreground">
+              <!-- Bloc Dates -->
+              <div class="space-y-1">
+                <div class="flex items-center gap-2">
+                  <CalendarIcon class="w-4 h-4" />
+                  <span>Du {{ new Date(mission.startDate).toLocaleDateString("fr-FR") }}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <CalendarIcon class="w-4 h-4" />
+                  <span>Au {{ new Date(mission.endDate).toLocaleDateString("fr-FR") }}</span>
+                </div>
+              </div>
+
+              <!-- Bloc Portée -->
+              <div class="space-y-1">
+                
+                <div v-if="mission.group" class="flex items-center gap-2">
+                  <Users class="h-4 w-4" />
+                  <span class="text-foreground font-medium">{{ mission.group.name }}</span>
+                </div>
+                <div v-else-if="mission.section" class="flex items-center gap-2">
+                  <Users2 class="h-4 w-4" />
+                  <span class="text-foreground font-medium">{{ mission.section.name }}</span>
+                </div>
+                <div v-else-if="mission.compagnie" class="flex items-center gap-2">
+                  <Building2 class="h-4 w-4" />
+                  <span class="text-foreground font-medium">{{ mission.compagnie.name }}</span>
+                </div>
+              </div>
             </div>
           </div>
         </CardContent>

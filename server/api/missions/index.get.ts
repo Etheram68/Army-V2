@@ -103,7 +103,10 @@ export default defineEventHandler(async (event) => {
         startDate: mission.startDate,
         endDate: mission.endDate,
         participantsCount: participantsPresent,
-        hasParticipated
+        hasParticipated,
+        compagnie: mission.compagnie ? { name: mission.compagnie.name } : null,
+        section: mission.section ? { name: mission.section.name } : null,
+        group: mission.group ? { name: mission.group.name } : null
       }
     }),
     total

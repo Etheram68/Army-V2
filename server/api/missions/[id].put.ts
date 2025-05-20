@@ -58,9 +58,9 @@ export default defineEventHandler(async (event) => {
 
   // Contrôle des permissions en fonction du rôle
   const allowedRoles = {
-    GROUPE: ['CHEF_GROUPE', 'ADJOINT_CHEF_GROUPE'],
-    SECTION: ['CHEF_SECTION', 'ADJOINT_CHEF_SECTION'],
-    COMPAGNIE: ['COMMANDANT_UNITE', 'ADJOINT_COMMANDANT_UNITE'],
+    GROUPE: ['CHEF_GROUPE', 'CHEF_SECTION', 'COMMANDANT_UNITE'],
+    SECTION: ['CHEF_SECTION', 'COMMANDANT_UNITE'],
+    COMPAGNIE: ['COMMANDANT_UNITE'],
   }
   if (!allowedRoles[visibility].includes(user.role)) {
     throw createError({ statusCode: 403, message: 'Non autorisé à créer cette mission' })
