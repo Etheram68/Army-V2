@@ -15,7 +15,12 @@ const badgeLabel = computed(() =>
 )
 
 function formatDate(date: string) {
-  return new Date(date).toLocaleDateString('fr-FR')
+  return new Intl.DateTimeFormat('fr-FR', {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric"
+  }).format(new Date(date))
 }
 </script>
 

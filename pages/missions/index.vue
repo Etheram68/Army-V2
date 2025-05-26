@@ -127,11 +127,21 @@ watchEffect(async () => {
               <div class="space-y-1">
                 <div class="flex items-center gap-2">
                   <CalendarIcon class="w-4 h-4" />
-                  <span>Du {{ new Date(mission.startDate).toLocaleDateString("fr-FR") }}</span>
+                  <span>Du {{ new Intl.DateTimeFormat('fr-FR', {
+                    weekday: "long",
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric"
+                  }).format(new Date(mission.startDate)) }}</span>
                 </div>
                 <div class="flex items-center gap-2">
                   <CalendarIcon class="w-4 h-4" />
-                  <span>Au {{ new Date(mission.endDate).toLocaleDateString("fr-FR") }}</span>
+                  <span>Au {{ new Intl.DateTimeFormat('fr-FR', {
+                    weekday: "long",
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric"
+                  }).format(new Date(mission.endDate)) }}</span>
                 </div>
               </div>
 

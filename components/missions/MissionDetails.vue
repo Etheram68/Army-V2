@@ -60,14 +60,24 @@ defineProps<Props>()
             <Calendar class="h-5 w-5" />
             <span>Date de début</span>
           </div>
-          <p class="text-lg">{{ new Date(mission.startDate).toLocaleDateString("fr-FR") }}</p>
+          <p class="text-lg">{{ new Intl.DateTimeFormat('fr-FR', {
+            weekday: "long",
+            day: "numeric",
+            month: "long",
+            year: "numeric"
+          }).format(new Date(mission.startDate)) }}</p>
         </div>
         <div class="space-y-2">
           <div class="flex items-center gap-2 text-muted-foreground">
             <Calendar class="h-5 w-5" />
             <span>Date de fin</span>
           </div>
-          <p class="text-lg">{{ new Date(mission.endDate).toLocaleDateString("fr-FR") }}</p>
+          <p class="text-lg">{{ new Intl.DateTimeFormat('fr-FR', {
+            weekday: "long",
+            day: "numeric",
+            month: "long",
+            year: "numeric"
+          }).format(new Date(mission.endDate)) }}</p>
         </div>
       </div>
 
