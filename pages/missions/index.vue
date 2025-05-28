@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/card'
 import { Button } from '~/components/ui/button'
 import { Badge } from '~/components/ui/badge'
-import { CalendarIcon, UsersIcon, PlusIcon, AlertCircle, Building2, Users2, Users } from 'lucide-vue-next'
+import { CalendarIcon, UsersIcon, PlusIcon, AlertCircle, Building2, Users2, Users, ArrowLeft, ArrowRight } from 'lucide-vue-next'
 import { Separator } from '~/components/ui/separator'
 
 interface Mission {
@@ -174,7 +174,7 @@ watchEffect(async () => {
       </Card>
     </div>
     <!-- Pagination -->
-    <div class="flex justify-center mt-8">
+    <div v-if="missions.length != 0" class="flex justify-center mt-8">
       <div class="inline-flex items-center gap-2">
         <Button
           variant="outline"
@@ -182,7 +182,7 @@ watchEffect(async () => {
           :disabled="page === 1"
           @click="goToPage(page - 1)"
         >
-          ←
+          <ArrowLeft />
         </Button>
 
         <div class="flex items-center gap-1">
@@ -203,7 +203,7 @@ watchEffect(async () => {
           :disabled="page === totalPages"
           @click="goToPage(page + 1)"
         >
-          →
+          <ArrowRight />
         </Button>
       </div>
     </div>
